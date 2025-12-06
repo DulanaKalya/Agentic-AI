@@ -3,3 +3,4 @@
 #langchain-google-genai==2.0.10
 #python-dotenv==0.9.9   # or upgrade to 1.0.1+ if you’re using python-dotenv
 langchainhub==0.1.21
+grandalf
