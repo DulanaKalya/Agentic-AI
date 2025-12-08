@@ -1,9 +1,13 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-from langchain_community.tools import TavilySearchResults
-from langchain_core.prompts import PromptTemplate
-from langchain_classic.agents import create_react_agent, AgentExecutor ,tool
 import datetime
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.prompts import PromptTemplate
+from langchain_core.tools import tool
+from langchain.agents import AgentExecutor, create_react_agent
+
+
 
 load_dotenv()
 
