@@ -1,7 +1,7 @@
-﻿from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 import datetime
 from langchain_groq import ChatGroq
-from schema import AnswerQuestion, ReviseAnswer
+from schema import AnswerQuection, ReviseAnswer
 #from langchain_core.messages import HumanMessage
 
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ You must follow this process:
 
 1. {first_instruction}
 2. Reflect and critique your answer. Be severe to maximize improvement.
-3. After the reflection, list 1â€“3 search queries separately for researching improvements.
+3. After the reflection, list 1–3 search queries separately for researching improvements.
    - Do NOT include the search queries inside the reflection.
 4. Finally, answer the user's question above using the required format.
         """.strip()
@@ -43,7 +43,7 @@ llm = ChatGroq(
 )
 
 
-first_responder_llm = llm.with_structured_output(AnswerQuestion)
+first_responder_llm = llm.with_structured_output(AnswerQuection)
 revisor_llm = llm.with_structured_output(ReviseAnswer)
 
 # Revisor instructions

@@ -1,0 +1,45 @@
+from typing import List
+from langchain_core.messages import BaseMessage,ToolMessage
+from langgraph.graph import END,MessageGraph
+from chains import revisor_chain, first_responder_chain
+from tool import execute_tools
+import os
+
+graph = MessageGraph()
+MAX_ITERATIONS = 2
+
+#nodes
+graph.add_node("draft",first_responder_chain)
+graph.add_node("execute_tools", execute_tools)
+graph.add_node("revisor", revisor_chain)
+
+#edges
+graph.add_edge("draft","execute_tools")
+graph.add_edge("execute_tools","revisor")
+
+
+def event_loop(state: List[BaseMessage]) -> str:
+    count_tool_visit =  sum(isinstance(item,ToolMessage) for item in state)
+    num_of_iterations = count_tool_visit
+    if num_of_iterations > MAX_ITERATIONS:
+        return END
+    return "execute_tools"
+
+"""✔️ Final Answer
+Yes, it is okay to write -> str because Python does not enforce it, but it is not 100% correct.
+The return type should ideally allow END, which is not a string.
+"""
+graph.add_conditional_edges("revisor",event_loop)
+graph.set_entry_point("draft")
+
+app = graph.compile()
+
+print(os.environ.get("GROQ_API_KEY"))
+
+#"""
+print(app.get_graph().draw_mermaid())
+app.get_graph().print_ascii()
+
+response = app.invoke("Write about how small business can leverage AI to grow")
+print(response)
+#"""

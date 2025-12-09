@@ -1,0 +1,182 @@
+import json
+from typing import List, Dict, Any
+from langchain_core.messages import AIMessage, BaseMessage, ToolMessage, HumanMessage
+from langchain_community.tools import TavilySearchResults
+from dotenv import load_dotenv
+
+load_dotenv()
+
+tavily_tool = TavilySearchResults(max_results=1)
+
+def execute_tools(state: List[BaseMessage]) -> List[BaseMessage]:
+    last_ai_message: AIMessage = state[-1]
+    if not hasattr(last_ai_message,"tool_calls") or not last_ai_message.tool_calls:
+        return []
+    
+    # hasattr(Object,attribute) --> function
+
+    tool_messages = []
+
+    for tool_call in last_ai_message.tool_calls:
+        if tool_call["name"] in ["AnswerQuection","ReviseAnswer"]:
+            call_id = tool_call["id"]
+            search_queries = tool_call["args"].get("search_queries",[])
+            """
+                ✅ 2. .get("search_queries", [])
+                .get() is a dictionary method:
+                dict.get(key, default_value)
+                Meaning:
+                        If the dictionary contains key, return its value.
+                        Otherwise, return the default_value.
+            """
+            query_results = {}
+            for query in search_queries:
+                result = tavily_tool.invoke(query)
+                query_results[query] = result
+
+            tool_messages.append(
+                ToolMessage(
+                    content = json.dumps(query_results),
+                    tool_call_id=call_id
+                )
+            )
+
+    return tool_messages
+
+
+"""ToolMessage
+
+    ToolMessage(
+        content="...",          # tool response as string
+        tool_call_id="12345"    # must match the tool call ID from AIMessage
+    )
+
+    {
+        "tool_calls": [
+            {"id": "1", "name": "search", "args": {...}},
+            {"id": "2", "name": "calculator", "args": {...}}
+        ] 
+    }
+
+"""
+
+# Example usage
+test_state = [
+    HumanMessage(
+        content="Write about how small business can leverage AI to grow"
+    ),
+    AIMessage(
+        content="", 
+        tool_calls=[
+            {
+                "name": "AnswerQuection",
+                "args": {
+                    'answer': '', 
+                    'search_queries': [
+                            'capital of sri lanka,give single word answer', 
+                            'who is anura kumara dissanayake,give single word answer'
+                    ], 
+                    'reflection': {
+                        'missing': '', 
+                        'superfluous': ''
+                    }
+                },
+                "id": "call_KpYHichFFEmLitHFvFhKy1Ra",
+            }
+        ],
+    )
+]
+
+
+"""
+results = execute_tools(test_state)
+
+print("Raw results:", results)
+
+print("=====================================================")
+
+if results:
+    parsed_content = json.loads(results[0].content)
+    print("Parsed content:", parsed_content)
+    print("=====================================================")
+"""
+
+""" 
+    {
+  "capital of sri lanka,give single word answer": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Capital_of_Sri_Lanka",
+      "content": "... extracted text ..."
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Sri_Lanka",
+      "content": "... extracted text ..."
+    }
+  ],
+
+  "who is anura kumara dissanayake,give single word answer": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Anura_Kumara_Dissanayake",
+      "content": "..."
+    },
+    {
+      "url": "https://www.britannica.com/biography/Anura-Kumara-Dissanayake",
+      "content": "..."
+    }
+  ],
+
+  "best engineering university in sri lanka,give single word answer": [
+    {
+      "url": "https://edurank.org/engineering/lk/",
+      "content": "..."
+    },
+    {
+      "url": "https://www.scimagoir.com/...rankings",
+      "content": "..."
+    }
+  ]
+}
+
+"""
+"""
+    Raw results: [ToolMessage(content="{"capital of sri lanka":[{"url": "...", "content": "..."}], "who is ...": [...]}",
+ tool_call_id='1')]
+
+=====================================================
+
+Parsed content: {
+  "capital of sri lanka": [
+      {"url": "...", "content": "..."},
+      {"url": "...", "content": "..."}
+  ],
+  "who is anura kumara dissanayake": [
+      {"url": "...", "content": "..."},
+      {"url": "...", "content": "..."}
+  ]
+}
+
+=====================================================
+"""
+
+"""
+results = execute_tools(test_state)
+
+if results:
+    parsed = json.loads(results[0].content)
+
+    # Choose one query key
+    query_key = "capital of sri lanka,give single word answer"
+
+    # All results for that query
+    all_results = parsed.get(query_key)
+    print("All results:", all_results)
+
+    # First result
+    first_result = all_results[0]
+    print("First result:", first_result)
+
+    # Individual fields
+    print("URL:", first_result["url"])
+    print("Content:", first_result["content"])
+
+"""
