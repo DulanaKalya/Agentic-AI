@@ -1,0 +1,2 @@
+I successfully made docker mcp server and connected with my mcp server :)
+

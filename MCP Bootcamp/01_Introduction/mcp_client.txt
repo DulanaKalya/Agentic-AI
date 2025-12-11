@@ -1,0 +1,2 @@
+I successfully made my first MCP Client and connected with my mcp server :)
+"I successfully made my first MCP Client and connected with my mcp server :)" 
