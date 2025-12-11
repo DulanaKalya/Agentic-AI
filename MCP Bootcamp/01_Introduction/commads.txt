@@ -23,7 +23,7 @@ docker build -t terminal_server_docker .
 
 
 
-can you create a directory called claude_output. Make a file inside it called terminal_server_test.txt
+can you create a directory called claude_output. Make a file inside it called terminal_server_test1.txt
 
 
 Can you add the text "I successfully made my first MCP Client and connected with my mcp server :)" to this file and then can you open this using code, the terminal_server_test.txt file.
